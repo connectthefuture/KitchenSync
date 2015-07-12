@@ -4,6 +4,19 @@ logfile="$HOME/Library/Logs/Kitchen-sync/Kitchen-sync$(date +_%Y_%m_%d_%H_%M_%S)
 
 mkdir -p "$HOME/Library/Logs/Kitchen-sync"
 
+get_checksums()
+{
+	if [ $# -ne 1 ] ; then
+		echo "Usage: $0 path" >&2
+		return 1
+	fi
+	
+	include_hidden=0
+	log_file=""
+	
+	find -s * -type f -not -name ".*" -exec md5 -r "{}" \;
+}
+
 PROGNAME="$(basename "$0")"
 
 usage()
@@ -101,7 +114,7 @@ for (( i = 0 ; i < ${#copies[@]} ; i++ )); do
 	fi
 	
 	if [ $i -eq 0 ]; then
-		echo "First copy complete - source can be ejected"
+		#echo "First copy complete - source can be ejected"
 		
 		# Do the remaining copies from the first copy
 		source="${copies[1]}"
