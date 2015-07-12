@@ -1,23 +1,8 @@
 #!/bin/bash
 
-#####
-#
-# Script to copy material (files and folders) from source folder
-# to one or more destination folders using rSync
-#
-#####
-
 logfile="$HOME/Library/Logs/rSyncScript/rSyncScript$(date +_%Y_%m_%d_%H_%M_%S).log"
 
 mkdir -p "$HOME/Library/Logs/rSyncScript"
-
-
-# Flags
-#  Include hidden files
-#  Verbose
-#  Automatic target folder naming e.g. Date/Offload_%n
-#  No checksum
-#  Checksums only
 
 source=$1
 shift
