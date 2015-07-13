@@ -116,28 +116,13 @@ if [ ${#copies[@]} -lt 1 ] ; then
 	usage
 fi
 
-#cat << EOF
-#VERIFY_FILES=$VERIFY_FILES
-#CHECKSUMS_ONLY=$CHECKSUMS_ONLY
-#INCLUDE_HIDDEN=$INCLUDE_HIDDEN
-#EOF
-
-#for copy in "$@" ; do
-#	copies=( "${copies[@]}" "$copy" )
-#	shift
-#done
-
-num_copies=${#copies[@]}
-
 do_copy "$source" "${copies[0]}" $INCLUDE_HIDDEN
 get_checksums "$source" $INCLUDE_HIDDEN "$log_folder""/md5_source.txt" &
 get_checksums "${copies[0]}" $INCLUDE_HIDDEN "$log_folder""/md5_copy1.txt" &
 
-source="${copies[0]}"
-
 for (( i = 1 ; i < ${#copies[@]} ; i++ )); do
 	{
-		do_copy "$source" "${copies[i]}" $INCLUDE_HIDDEN
+		do_copy "${copies[0]}" "${copies[i]}" $INCLUDE_HIDDEN
 		get_checksums "${copies[i]}" $INCLUDE_HIDDEN "$log_folder""/md5_copy"$(($i+1))".txt"
 	} &
 done
@@ -145,3 +130,8 @@ done
 wait
 
 echo "Compare checksum files"
+
+diff "$log_folder""/md5_source.txt" "$log_folder""/md5_copy1.txt"
+for (( i = 1 ; i < ${#copies[@]} ; i++ )); do
+	diff "$log_folder""/md5_source.txt" "$log_folder""/md5_copy"$(($i+1))".txt"
+done
