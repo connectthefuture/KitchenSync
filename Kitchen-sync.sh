@@ -1,20 +1,51 @@
 #!/bin/bash
 
-logfile="$HOME/Library/Logs/Kitchen-sync/Kitchen-sync$(date +_%Y_%m_%d_%H_%M_%S).log"
+log_folder="$HOME""/Library/Logs/kitchen-sync"
+#log_file="$log_folder""/log.txt"
+mkdir -p "$log_folder"
 
-mkdir -p "$HOME/Library/Logs/Kitchen-sync"
-
-get_checksums()
+do_copy()
 {
-	if [ $# -ne 1 ] ; then
-		echo "Usage: $0 path" >&2
+	if [ $# -ne 3 ] ; then
+		echo "Usage: $0 source target include_hidden" >&2
 		return 1
 	fi
 	
-	include_hidden=0
-	log_file=""
+	source="$1"
+	target="$2"
+	include_hidden="$3"
 	
-	find -s * -type f -not -name ".*" -exec md5 -r "{}" \;
+	command="rSync -rt"
+	if [ $include_hidden = 0 ] ; then
+		command="$command --exclude=\".*\""
+	fi
+	command="$command $source $target"
+	
+	#echo "$command"
+	eval "$command"
+}
+
+get_checksums()
+{
+	if [ $# -ne 3 ] ; then
+		echo "Usage: $0 path include_hidden log" >&2
+		return 1
+	fi
+	
+	path="$1"
+	include_hidden="$2"
+	log_file="$3"
+
+	cd "$path"
+	
+	command="find -s * -type f"
+	if [ $include_hidden = 0 ] ; then
+		command="$command -not -name \".*\""
+	fi
+	command="$command -exec md5 -r \"{}\" \; >> ""$log_file"
+	
+	#echo "$command"
+	eval "$command"
 }
 
 PROGNAME="$(basename "$0")"
