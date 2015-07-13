@@ -15,6 +15,8 @@ do_copy()
 	target="$2"
 	include_hidden="$3"
 	
+	echo "Copy $source to $target"
+	
 	command="rSync -rt"
 	if [ $include_hidden = 0 ] ; then
 		command="$command --exclude=\".*\""
@@ -35,6 +37,8 @@ get_checksums()
 	path="$1"
 	include_hidden="$2"
 	log_file="$3"
+	
+	echo "Checksums for $path"
 
 	cd "$path"
 	
@@ -99,9 +103,9 @@ while [ $# -gt 0 ] ; do
         ;;
     *)
     	if [ -z "$source" ]; then
-    		source="$1"
+    		source="$1/"
 		else
-			copies=("${copies[@]}" "$1")
+			copies=("${copies[@]}" "$1/")
     	fi
         ;;
     esac
@@ -125,30 +129,19 @@ fi
 
 num_copies=${#copies[@]}
 
-for (( i = 0 ; i < ${#copies[@]} ; i++ )); do
-	
-	echo "Copy $(($i + 1)) of $num_copies" | tee -a $logfile
-	
-	#rSync -rt -h -vi --exclude=".*" --log-file="$logfile" --log-file-format="%f" "$source" "${copies[$i]}"
-	rSync -rt --exclude=".*" "$source" "${copies[$i]}"
+do_copy "$source" "${copies[0]}" $INCLUDE_HIDDEN
+get_checksums "$source" $INCLUDE_HIDDEN "$log_folder""/md5_source.txt" &
+get_checksums "${copies[0]}" $INCLUDE_HIDDEN "$log_folder""/md5_copy1.txt" &
 
-	echo "Copy $(($i + 1)) of $num_copies complete" | tee -a $logfile
+source="${copies[0]}"
 
-	if [ "$VERIFY_FILES" = 1]; then
-		if [ $i -eq 0 ]; then
-			cd "$source"
-			find -s * -type f -not -name ".*" -exec md5 -r "{}" \;
-		fi
-		
-		cd "${copies[$i]}"
-		find -s * -type f -not -name ".*" -exec md5 -r "{}" \;
-	fi
-	
-	if [ $i -eq 0 ]; then
-		#echo "First copy complete - source can be ejected"
-		
-		# Do the remaining copies from the first copy
-		source="${copies[1]}"
-	fi
-
+for (( i = 1 ; i < ${#copies[@]} ; i++ )); do
+	{
+		do_copy "$source" "${copies[i]}" $INCLUDE_HIDDEN
+		get_checksums "${copies[i]}" $INCLUDE_HIDDEN "$log_folder""/md5_copy"$(($i+1))".txt"
+	} &
 done
+
+wait
+
+echo "Compare checksum files"
