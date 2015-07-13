@@ -1,6 +1,6 @@
 #!/bin/bash
 
-log_folder="$HOME""/Library/Logs/kitchen-sync"
+log_folder="$HOME""/Library/Logs/kitchen-sync/$(date +%F)"
 #log_file="$log_folder""/log.txt"
 mkdir -p "$log_folder"
 
@@ -116,22 +116,27 @@ if [ ${#copies[@]} -lt 1 ] ; then
 	usage
 fi
 
+# Create checksum log file names
+checksum_logs=()
+checksum_logs=("${checksum_logs[@]}" "$log_folder/md5-source.log")
+for (( i = 0 ; i < ${#copies[@]} ; i++ )); do
+	checksum_logs=("${checksum_logs[@]}" "$log_folder/md5-copy"$(($i+1))".log")
+done
+
 do_copy "$source" "${copies[0]}" $INCLUDE_HIDDEN
-get_checksums "$source" $INCLUDE_HIDDEN "$log_folder""/md5_source.txt" &
-get_checksums "${copies[0]}" $INCLUDE_HIDDEN "$log_folder""/md5_copy1.txt" &
+get_checksums "$source" $INCLUDE_HIDDEN "${checksum_logs[0]}" &
+get_checksums "${copies[0]}" $INCLUDE_HIDDEN "${checksum_logs[1]}" &
 
 for (( i = 1 ; i < ${#copies[@]} ; i++ )); do
 	{
 		do_copy "${copies[0]}" "${copies[i]}" $INCLUDE_HIDDEN
-		get_checksums "${copies[i]}" $INCLUDE_HIDDEN "$log_folder""/md5_copy"$(($i+1))".txt"
+		get_checksums "${copies[i]}" $INCLUDE_HIDDEN "${checksum_logs[i+1]}"
 	} &
 done
 
 wait
 
-echo "Compare checksum files"
-
-diff "$log_folder""/md5_source.txt" "$log_folder""/md5_copy1.txt"
-for (( i = 1 ; i < ${#copies[@]} ; i++ )); do
-	diff "$log_folder""/md5_source.txt" "$log_folder""/md5_copy"$(($i+1))".txt"
+for (( i = 1 ; i < ${#checksum_logs[@]} ; i++ )); do
+	echo "Compare ${checksum_logs[0]} to ${checksum_logs[i]}"
+	diff "${checksum_logs[0]}" "${checksum_logs[i]}"
 done
