@@ -1,0 +1,5 @@
+To do
+
+- automatic folder creation e.g. base/date/offload-001
+- put md5 logs in ofload-001 folder
+- option to move md5 log files to copy folder
