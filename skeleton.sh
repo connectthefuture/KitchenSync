@@ -11,9 +11,9 @@ copy()
 	target="$2"
 	include_hidden="$3"
 
-	echo "Starting copy: ""$source"" -> ""$target"
+	echo "      starting copy $source -> $target"
 	sleep $(($RANDOM % 10 + 10))
-	echo "Finished copy: ""$source"" -> ""$target"
+	echo "      finished copy $source -> $target"
 }
 
 get_checksums()
@@ -27,9 +27,9 @@ get_checksums()
 	include_hidden="$2"
 	log="$3"
 	
-	echo "Starting checksums: ""$path"" - log: ""$log"
+	echo "      starting checksums for $path"
 	sleep $(($RANDOM % 10 + 10))
-	echo "Finished checksums: ""$path"
+	echo "      finished checksums for $path"
 }
 
 info()
@@ -46,35 +46,32 @@ info()
 	verify_only="$5"
 	
 	echo
-	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	echo "+"
-	echo "+    ============"
-	echo "+    kitchen-sync"
-	echo "+    ============"
-	echo "+"
-	if [ $include_hidden = 1 ] ; then
-		echo "+    include hidden files"
-	else
-		echo "+    exclude hidden files"
-	fi
+	echo "  kitchen-sync"
+	echo ""
+	echo "    options:"
 	if [ $verify_only = 1 ] ; then
-		echo "+    verify only"
+		echo "      verify only"
 	else
-		echo "+    copy"
+		echo "      copy"
 	fi
 	if [ $verify_files = 0 ] ; then
-		echo "+    don't verify"
+		echo "      don't verify"
 	else
-		echo "+    verify"
+		echo "      verify"
 	fi
-	echo "+"
-	echo "+    source: $source"
+	if [ $include_hidden = 1 ] ; then
+		echo "      include hidden files"
+	else
+		echo "      exclude hidden files"
+	fi
+	echo ""
+	echo "    folders:"
+	echo "      source: $source"
 	for (( i = 0 ; i < ${#copies[@]} ; i++ )); do
-		echo "+    copy "$(($i+1))": ${copies[i]}"
+		echo "      copy "$(($i+1))": ${copies[i]}"
 	done
-	echo "+"
-	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo
+	echo "    copy/verify:"
 }
 
 source="source"
@@ -104,9 +101,4 @@ done
 wait
 
 echo
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+"
-echo "+    Compare checksum files"
-echo "+"
-echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo
+echo "    compare checksum logs:"
