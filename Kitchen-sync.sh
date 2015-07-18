@@ -17,6 +17,8 @@ do_copy()
 	
 	echo "Copy $source to $target"
 	
+	mkdir -p "$target"
+	
 	command="rSync -rt"
 	if [ $include_hidden = 0 ] ; then
 		command="$command --exclude=\".*\""
@@ -77,7 +79,7 @@ EOF
 }
 
 VERIFY_FILES=1
-CHECKSUMS_ONLY=0
+VERIFY_ONLY=0
 INCLUDE_HIDDEN=0
 
 source=""
@@ -95,7 +97,7 @@ while [ $# -gt 0 ] ; do
         shift
         ;;
     --checksums-only)
-        CHECKSUMS_ONLY=1
+        VERIFY_ONLY=1
         shift
         ;;
     -*)
@@ -117,26 +119,38 @@ if [ ${#copies[@]} -lt 1 ] ; then
 fi
 
 # Create checksum log file names
-checksum_logs=()
-checksum_logs=("${checksum_logs[@]}" "$log_folder/md5-source.log")
-for (( i = 0 ; i < ${#copies[@]} ; i++ )); do
-	checksum_logs=("${checksum_logs[@]}" "$log_folder/md5-copy"$(($i+1))".log")
-done
+if [ $VERIFY_FILES = 1 ] ; then
+	checksum_logs=()
+	checksum_logs=("${checksum_logs[@]}" "$log_folder/md5-source.log")
+	for (( i = 0 ; i < ${#copies[@]} ; i++ )); do
+		checksum_logs=("${checksum_logs[@]}" "$log_folder/md5-copy"$(($i+1))".log")
+	done
+fi
 
-do_copy "$source" "${copies[0]}" $INCLUDE_HIDDEN
-get_checksums "$source" $INCLUDE_HIDDEN "${checksum_logs[0]}" &
-get_checksums "${copies[0]}" $INCLUDE_HIDDEN "${checksum_logs[1]}" &
+if [ $VERIFY_ONLY = 0 ] ; then
+	do_copy "$source" "${copies[0]}" $INCLUDE_HIDDEN
+fi
+if [ $VERIFY_FILES = 1 ] ; then
+	get_checksums "$source" $INCLUDE_HIDDEN "${checksum_logs[0]}" &
+	get_checksums "${copies[0]}" $INCLUDE_HIDDEN "${checksum_logs[1]}" &
+fi
 
 for (( i = 1 ; i < ${#copies[@]} ; i++ )); do
 	{
-		do_copy "${copies[0]}" "${copies[i]}" $INCLUDE_HIDDEN
-		get_checksums "${copies[i]}" $INCLUDE_HIDDEN "${checksum_logs[i+1]}"
+		if [ $VERIFY_ONLY = 0 ] ; then
+			do_copy "${copies[0]}" "${copies[i]}" $INCLUDE_HIDDEN
+		fi
+		if [ $VERIFY_FILES = 1 ] ; then
+			get_checksums "${copies[i]}" $INCLUDE_HIDDEN "${checksum_logs[i+1]}"
+		fi
 	} &
 done
 
 wait
 
-for (( i = 1 ; i < ${#checksum_logs[@]} ; i++ )); do
-	echo "Compare ${checksum_logs[0]} to ${checksum_logs[i]}"
-	diff "${checksum_logs[0]}" "${checksum_logs[i]}"
-done
+if [ $VERIFY_FILES = 1 ] ; then
+	for (( i = 1 ; i < ${#checksum_logs[@]} ; i++ )); do
+		echo "Compare ${checksum_logs[0]} to ${checksum_logs[i]}"
+		diff "${checksum_logs[0]}" "${checksum_logs[i]}"
+	done
+fi
