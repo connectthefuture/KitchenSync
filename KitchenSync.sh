@@ -54,6 +54,48 @@ get_checksums()
 	eval "$command"
 }
 
+info()
+{
+	if [ $# -ne 5 ] ; then
+		echo "Usage: $0 source targets include_hidden verify_files verify_only" >&2
+		return 1
+	fi
+	
+	source="$1"
+	copies="$2"
+	include_hidden="$3"
+	verify_files="$4"
+	verify_only="$5"
+	
+	echo
+	echo "  kitchen-sync"
+	echo ""
+	echo "    options:"
+	if [ $verify_only = 1 ] ; then
+		echo "      verify only"
+	else
+		echo "      copy"
+	fi
+	if [ $verify_files = 0 ] ; then
+		echo "      don't verify"
+	else
+		echo "      verify"
+	fi
+	if [ $include_hidden = 1 ] ; then
+		echo "      include hidden files"
+	else
+		echo "      exclude hidden files"
+	fi
+	echo ""
+	echo "    folders:"
+	echo "      source: $source"
+	for (( i = 0 ; i < ${#copies[@]} ; i++ )); do
+		echo "      copy "$(($i+1))": ${copies[i]}"
+	done
+	echo
+	echo "    copy/verify:"
+}
+
 PROGNAME="$(basename "$0")"
 
 usage()
@@ -112,10 +154,17 @@ while [ $# -gt 0 ] ; do
     shift
 done
 
+if [ ! -d "$source" ] ; then
+	echo "Source is not a directory"
+	usage
+fi
+
 if [ ${#copies[@]} -lt 1 ] ; then
 	echo "Must specify source and destination directories"
 	usage
 fi
+
+info "$source" $copies $INCLUDE_HIDDEN $VERIFY_FILES $VERIFY_ONLY
 
 # Create checksum log file names
 if [ $VERIFY_FILES = 1 ] ; then
