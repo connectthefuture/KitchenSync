@@ -56,27 +56,19 @@ get_checksums()
 
 get_auto_directory_suffix()
 {
-	if [ $# -ne 3 ] ; then
-		echo "Usage: $0 base-dir use-date prefix" >&2
+	if [ $# -ne 2 ] ; then
+		echo "Usage: $0 base_dir format" >&2
 		return 1
 	fi
 	
 	base_dir="$1"
-	use_date="$2"
-	prefix="$3"
+	prefix="$2"
 	
 	suffix=""
 	index=1
 	while [ true ]; do
-	
-		if [ $use_date = 1 ] ; then
-			suffix="$(date +'%Y-%m-%d')/"
-		else
-			suffix=""
-		fi
+		suffix="$prefix$(printf '%03d' $index)"
 		
-		suffix="$suffix$prefix$(printf '%03d' $index)"
-
 		if [ ! -d "$base_dir$suffix" ] ; then
 			break
 		fi
@@ -121,7 +113,7 @@ info()
 	#	echo "      exclude hidden files"
 	fi
 	if [ $auto_folder_naming = 1 ] ; then
-		echo "      auto destination folder naming on"
+		echo "      auto destination folder naming"
 	fi
 	echo ""
 	echo "    folders:"
@@ -161,9 +153,8 @@ VERIFY_FILES=1
 VERIFY_ONLY=0
 INCLUDE_HIDDEN=0
 AUTO_FOLDER_NAMING=0
-AUTO_FOLDER_NAMING_USE_DATE=0
 
-auto_folder_naming_prefix="Offload"
+auto_folder_naming_prefix=""
 
 source=""
 copies=()
@@ -183,6 +174,8 @@ while [ $# -gt 0 ] ; do
         ;;
     --auto-folder-naming)
         AUTO_FOLDER_NAMING=1
+        auto_folder_naming_prefix="$2"
+        shift
         ;;
     -*)
         usage "Unknown option '$1'"
@@ -209,7 +202,7 @@ if [ ${#copies[@]} -lt 1 ] ; then
 fi
 
 if [ $AUTO_FOLDER_NAMING = 1 ]; then
-	suffix="$(get_auto_directory_suffix "${copies[0]}" $AUTO_FOLDER_NAMING_USE_DATE "$auto_folder_naming_prefix")"
+	suffix="$(get_auto_directory_suffix "${copies[0]}" "$auto_folder_naming_prefix")"
 	for (( i = 0 ; i < ${#copies[@]} ; i++ )); do
 		copies[i]="${copies[i]}$suffix"
 	done
@@ -261,6 +254,6 @@ if [ $VERIFY_FILES = 1 ] ; then
 	done
 fi
 
-#trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
-trap "exit" INT TERM
-trap "kill 0" EXIT
+trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
+#trap "exit" INT TERM
+#trap "kill 0" EXIT
