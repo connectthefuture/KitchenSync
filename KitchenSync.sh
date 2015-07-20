@@ -93,7 +93,7 @@ info()
 	verify_only="$5"
 	auto_folder_naming="$6"
 	
-	echo "  $0"
+	echo "  $PROGNAME"
 	echo ""
 	echo "    options:"
 	if [ $verify_only = 1 ] ; then
@@ -255,6 +255,7 @@ if [ $VERIFY_FILES = 1 ] ; then
 	done
 fi
 
-trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
+#trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
+trap "trap - SIGTERM && kill 0" SIGINT SIGTERM EXIT
 #trap "exit" INT TERM
 #trap "kill 0" EXIT
