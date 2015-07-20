@@ -1,6 +1,9 @@
 #!/bin/bash
+set -e
 
-log_folder="$HOME""/Library/Logs/kitchen-sync/$(date +%F)"
+PROGNAME="$(basename "$0")"
+
+log_folder="$HOME/Library/Logs/$PROGNAME/$(date +%F)"
 #log_file="$log_folder""/log.txt"
 mkdir -p "$log_folder"
 
@@ -95,8 +98,6 @@ info()
 	echo
 	echo "    copy/verify:"
 }
-
-PROGNAME="$(basename "$0")"
 
 usage()
 {
