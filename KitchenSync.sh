@@ -2,9 +2,8 @@
 set -e
 
 PROGNAME="$(basename "$0")"
-
 log_folder="$HOME/Library/Logs/$PROGNAME/$(date +%F)"
-#log_file="$log_folder""/log.txt"
+
 mkdir -p "$log_folder"
 
 do_copy()
@@ -176,6 +175,7 @@ if [ $VERIFY_FILES = 1 ] ; then
 	done
 fi
 
+# Do the 1st copy
 if [ $VERIFY_ONLY = 0 ] ; then
 	do_copy "$source" "${copies[0]}" $INCLUDE_HIDDEN
 fi
@@ -184,6 +184,7 @@ if [ $VERIFY_FILES = 1 ] ; then
 	get_checksums "${copies[0]}" $INCLUDE_HIDDEN "${checksum_logs[1]}" &
 fi
 
+# Do subsequent copies
 for (( i = 1 ; i < ${#copies[@]} ; i++ )); do
 	{
 		if [ $VERIFY_ONLY = 0 ] ; then
@@ -197,6 +198,7 @@ done
 
 wait
 
+# Compare checksum logs
 if [ $VERIFY_FILES = 1 ] ; then
 	for (( i = 1 ; i < ${#checksum_logs[@]} ; i++ )); do
 		echo "Compare ${checksum_logs[0]} to ${checksum_logs[i]}"
