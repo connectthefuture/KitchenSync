@@ -2,9 +2,7 @@
 set -e
 
 PROGNAME="$(basename "$0")"
-log_folder="$HOME/Library/Logs/$PROGNAME"
-
-mkdir -p "$log_folder"
+log_folder="$HOME/Library/Logs/$PROGNAME/Day001"
 
 do_copy()
 {
@@ -72,7 +70,9 @@ get_auto_directory_suffix()
 	while [ true ]; do
 	
 		if [ $use_date = 1 ] ; then
-			suffix="$suffix$(date +'%Y-%m-%d')/"
+			suffix="$(date +'%Y-%m-%d')/"
+		else
+			suffix=""
 		fi
 		
 		suffix="$suffix$prefix$(printf '%03d' $index)"
@@ -146,11 +146,12 @@ Recursively copy files from source to one or more destinations,
 performing checksums to verify target matches source.
 
 Options
- -h, --help            display this usage message and exit
- --no-checksums        don't verify files with checksums
- --checksums-only      just compare directories with checksums
- --include-hidden      include hidden files (those starting with a '.')
- --auto-folder-naming  automatically create a new folder for offload
+ -h, --help                    display this usage message and exit
+ --no-checksums                don't verify files with checksums
+ --checksums-only              just compare directories with checksums
+ --include-hidden              include hidden files (those starting with a '.')
+ --auto-folder-naming [prefix] automatically create a new folder for offload
+                               (prefix example: "/Day-003-\$(date +'%Y-%m-%d')/Offload-")
 EOF
 
 	exit 1
@@ -160,9 +161,9 @@ VERIFY_FILES=1
 VERIFY_ONLY=0
 INCLUDE_HIDDEN=0
 AUTO_FOLDER_NAMING=0
-AUTO_FOLDER_NAMING_USE_DATE=1
+AUTO_FOLDER_NAMING_USE_DATE=0
 
-auto_folder_naming_prefix="Offload-"
+auto_folder_naming_prefix="Offload"
 
 source=""
 copies=()
@@ -215,6 +216,8 @@ if [ $AUTO_FOLDER_NAMING = 1 ]; then
 	
 	log_folder="$log_folder/$suffix"
 fi
+
+mkdir -p "$log_folder"
 
 # Create checksum log file names
 if [ $VERIFY_FILES = 1 ] ; then
