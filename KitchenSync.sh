@@ -2,7 +2,7 @@
 set -e
 
 PROGNAME="$(basename "$0")"
-log_folder="$HOME/Library/Logs/$PROGNAME/Day001"
+log_folder="$HOME/Library/Logs/$PROGNAME"
 
 do_copy()
 {
@@ -15,7 +15,7 @@ do_copy()
 	target="$2/"
 	include_hidden="$3"
 	
-	echo "Copy $source to $target"
+	echo "      copy $source to $target"
 	
 	mkdir -p "$target"
 	
@@ -40,7 +40,7 @@ get_checksums()
 	include_hidden="$2"
 	log_file="$3"
 	
-	echo "Checksums for $path"
+	echo "      checksums for $path"
 
 	cd "$path"
 	
@@ -93,8 +93,7 @@ info()
 	verify_only="$5"
 	auto_folder_naming="$6"
 	
-	echo
-	echo "  kitchen-sync"
+	echo "  $0"
 	echo ""
 	echo "    options:"
 	if [ $verify_only = 1 ] ; then
@@ -246,10 +245,12 @@ done
 
 wait
 
+echo
 # Compare checksum logs
+echo "    compare checksums:"
 if [ $VERIFY_FILES = 1 ] ; then
 	for (( i = 1 ; i < ${#checksum_logs[@]} ; i++ )); do
-		echo "Compare ${checksum_logs[0]} to ${checksum_logs[i]}"
+		#echo "Compare ${checksum_logs[0]} to ${checksum_logs[i]}"
 		diff "${checksum_logs[0]}" "${checksum_logs[i]}"
 	done
 fi
