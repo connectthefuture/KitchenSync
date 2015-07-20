@@ -94,11 +94,9 @@ while [ $# -gt 0 ] ; do
         ;;
     --include-hidden)
         INCLUDE_HIDDEN=1
-        shift
         ;;
     --checksums-only)
         VERIFY_ONLY=1
-        shift
         ;;
     -*)
         usage "Unknown option '$1'"
@@ -115,6 +113,7 @@ while [ $# -gt 0 ] ; do
 done
 
 if [ ${#copies[@]} -lt 1 ] ; then
+	echo "Must specify source and destination directories"
 	usage
 fi
 
