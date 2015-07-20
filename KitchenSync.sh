@@ -203,3 +203,7 @@ if [ $VERIFY_FILES = 1 ] ; then
 		diff "${checksum_logs[0]}" "${checksum_logs[i]}"
 	done
 fi
+
+#trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
+trap "exit" INT TERM
+trap "kill 0" EXIT
