@@ -2,7 +2,7 @@
 set -e
 
 PROGNAME="$(basename "$0")"
-log_folder="$HOME/Library/Logs/$PROGNAME/$(date +%F)"
+log_folder="$HOME/Library/Logs/$PROGNAME"
 
 mkdir -p "$log_folder"
 
@@ -13,8 +13,8 @@ do_copy()
 		return 1
 	fi
 	
-	source="$1"
-	target="$2"
+	source="$1/"
+	target="$2/"
 	include_hidden="$3"
 	
 	echo "Copy $source to $target"
@@ -38,7 +38,7 @@ get_checksums()
 		return 1
 	fi
 	
-	path="$1"
+	path="$1/"
 	include_hidden="$2"
 	log_file="$3"
 	
@@ -56,10 +56,41 @@ get_checksums()
 	eval "$command"
 }
 
+get_auto_directory_suffix()
+{
+	if [ $# -ne 3 ] ; then
+		echo "Usage: $0 base-dir use-date prefix" >&2
+		return 1
+	fi
+	
+	base_dir="$1"
+	use_date="$2"
+	prefix="$3"
+	
+	suffix=""
+	index=1
+	while [ true ]; do
+	
+		if [ $use_date = 1 ] ; then
+			suffix="$suffix$(date +'%Y-%m-%d')/"
+		fi
+		
+		suffix="$suffix$prefix$(printf '%03d' $index)"
+
+		if [ ! -d "$base_dir$suffix" ] ; then
+			break
+		fi
+	
+		index=$(( index + 1))
+	done
+	
+	echo "$suffix"
+}
+
 info()
 {
-	if [ $# -ne 5 ] ; then
-		echo "Usage: $0 source targets include_hidden verify_files verify_only" >&2
+	if [ $# -ne 6 ] ; then
+		echo "Usage: $0 source targets include_hidden verify_files verify_only auto_folder_naming" >&2
 		return 1
 	fi
 	
@@ -68,6 +99,7 @@ info()
 	include_hidden="$3"
 	verify_files="$4"
 	verify_only="$5"
+	auto_folder_naming="$6"
 	
 	echo
 	echo "  kitchen-sync"
@@ -75,18 +107,21 @@ info()
 	echo "    options:"
 	if [ $verify_only = 1 ] ; then
 		echo "      verify only"
-	else
-		echo "      copy"
+	#else
+	#	echo "      copy"
 	fi
 	if [ $verify_files = 0 ] ; then
 		echo "      don't verify"
-	else
-		echo "      verify"
+	#else
+	#	echo "      verify"
 	fi
 	if [ $include_hidden = 1 ] ; then
 		echo "      include hidden files"
-	else
-		echo "      exclude hidden files"
+	#else
+	#	echo "      exclude hidden files"
+	fi
+	if [ $auto_folder_naming = 1 ] ; then
+		echo "      auto destination folder naming on"
 	fi
 	echo ""
 	echo "    folders:"
@@ -111,10 +146,11 @@ Recursively copy files from source to one or more destinations,
 performing checksums to verify target matches source.
 
 Options
- -h, --help          display this usage message and exit
- --no-checksums      don't verify files with checksums
- --checksums-only    just compare directories with checksums
- --include-hidden    include hidden files (those starting with a '.')
+ -h, --help            display this usage message and exit
+ --no-checksums        don't verify files with checksums
+ --checksums-only      just compare directories with checksums
+ --include-hidden      include hidden files (those starting with a '.')
+ --auto-folder-naming  automatically create a new folder for offload
 EOF
 
 	exit 1
@@ -123,6 +159,10 @@ EOF
 VERIFY_FILES=1
 VERIFY_ONLY=0
 INCLUDE_HIDDEN=0
+AUTO_FOLDER_NAMING=0
+AUTO_FOLDER_NAMING_USE_DATE=1
+
+auto_folder_naming_prefix="Offload-"
 
 source=""
 copies=()
@@ -140,14 +180,17 @@ while [ $# -gt 0 ] ; do
     --checksums-only)
         VERIFY_ONLY=1
         ;;
+    --auto-folder-naming)
+        AUTO_FOLDER_NAMING=1
+        ;;
     -*)
         usage "Unknown option '$1'"
         ;;
     *)
     	if [ -z "$source" ]; then
-    		source="$1/"
+    		source="$1"
 		else
-			copies=("${copies[@]}" "$1/")
+			copies=("${copies[@]}" "$1")
     	fi
         ;;
     esac
@@ -164,7 +207,14 @@ if [ ${#copies[@]} -lt 1 ] ; then
 	usage
 fi
 
-info "$source" $copies $INCLUDE_HIDDEN $VERIFY_FILES $VERIFY_ONLY
+if [ $AUTO_FOLDER_NAMING = 1 ]; then
+	suffix="$(get_auto_directory_suffix "${copies[0]}" $AUTO_FOLDER_NAMING_USE_DATE "$auto_folder_naming_prefix")"
+	for (( i = 0 ; i < ${#copies[@]} ; i++ )); do
+		copies[i]="${copies[i]}$suffix"
+	done
+	
+	log_folder="$log_folder/$suffix"
+fi
 
 # Create checksum log file names
 if [ $VERIFY_FILES = 1 ] ; then
@@ -174,6 +224,8 @@ if [ $VERIFY_FILES = 1 ] ; then
 		checksum_logs=("${checksum_logs[@]}" "$log_folder/md5-copy"$(($i+1))".log")
 	done
 fi
+
+info "$source" $copies $INCLUDE_HIDDEN $VERIFY_FILES $VERIFY_ONLY $AUTO_FOLDER_NAMING
 
 # Do the 1st copy
 if [ $VERIFY_ONLY = 0 ] ; then
