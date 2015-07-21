@@ -1,3 +1,7 @@
+#!/bin/sh
+
+set -e
+
 day=4
 day="Day$(printf '%03d' $day)"
 
