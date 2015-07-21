@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 PROGNAME="$(basename "$0")"
@@ -6,20 +6,21 @@ log_folder="$HOME/Library/Logs/$PROGNAME"
 
 do_copy()
 {
-	if [ $# -ne 3 ] ; then
-		echo "Usage: $0 source target include_hidden" >&2
+	if [ $# -ne 4 ] ; then
+		echo "Usage: $0 source target include_hidden log" >&2
 		return 1
 	fi
 	
 	source="$1/"
 	target="$2/"
 	include_hidden="$3"
+	log="$4"
 	
 	echo "      copy $source to $target"
 	
 	mkdir -p "$target"
 	
-	command="rSync -rt"
+	command="rSync -rt --log-file=\"$log\""
 	if [ $include_hidden = 0 ] ; then
 		command="$command --exclude=\".*\""
 	fi
@@ -211,6 +212,8 @@ fi
 
 mkdir -p "$log_folder"
 
+copy_log="$log_folder/copy.log"
+
 # Create checksum log file names
 if [ $VERIFY_FILES = 1 ] ; then
 	checksum_logs=()
@@ -224,7 +227,7 @@ info "$source" $copies $INCLUDE_HIDDEN $VERIFY_FILES $VERIFY_ONLY $AUTO_FOLDER_N
 
 # Do the 1st copy
 if [ $VERIFY_ONLY = 0 ] ; then
-	do_copy "$source" "${copies[0]}" $INCLUDE_HIDDEN
+	do_copy "$source" "${copies[0]}" $INCLUDE_HIDDEN "$copy_log"
 fi
 if [ $VERIFY_FILES = 1 ] ; then
 	get_checksums "$source" $INCLUDE_HIDDEN "${checksum_logs[0]}" &
@@ -235,7 +238,7 @@ fi
 for (( i = 1 ; i < ${#copies[@]} ; i++ )); do
 	{
 		if [ $VERIFY_ONLY = 0 ] ; then
-			do_copy "${copies[0]}" "${copies[i]}" $INCLUDE_HIDDEN
+			do_copy "${copies[0]}" "${copies[i]}" $INCLUDE_HIDDEN "$copy_log"
 		fi
 		if [ $VERIFY_FILES = 1 ] ; then
 			get_checksums "${copies[i]}" $INCLUDE_HIDDEN "${checksum_logs[i+1]}"
