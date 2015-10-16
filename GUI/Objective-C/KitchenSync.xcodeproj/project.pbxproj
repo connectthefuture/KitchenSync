@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E23B94E31B75E983007B5067 /* Test.sh in Resources */ = {isa = PBXBuildFile; fileRef = E23B94E21B75E983007B5067 /* Test.sh */; };
+		E281C6FB1B7602D30072D688 /* Wait.sh in Resources */ = {isa = PBXBuildFile; fileRef = E281C6FA1B7602D30072D688 /* Wait.sh */; };
 		E28963601B5EE17A0038C707 /* KitchenSync.sh in Resources */ = {isa = PBXBuildFile; fileRef = E289635F1B5EE17A0038C707 /* KitchenSync.sh */; };
 		E2C1A3561B5E3ABB0002CE47 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = E2C1A3551B5E3ABB0002CE47 /* AppDelegate.m */; };
 		E2C1A3581B5E3ABB0002CE47 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = E2C1A3571B5E3ABB0002CE47 /* main.m */; };
@@ -26,7 +28,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		E289635F1B5EE17A0038C707 /* KitchenSync.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = KitchenSync.sh; path = ../../../../GitHub/KitchenSync/KitchenSync.sh; sourceTree = "<group>"; };
+		E23B94E21B75E983007B5067 /* Test.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = Test.sh; sourceTree = "<group>"; };
+		E281C6FA1B7602D30072D688 /* Wait.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = Wait.sh; sourceTree = "<group>"; };
+		E289635F1B5EE17A0038C707 /* KitchenSync.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = KitchenSync.sh; path = ../../../KitchenSync.sh; sourceTree = "<group>"; };
 		E2C1A34F1B5E3ABB0002CE47 /* KitchenSync.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KitchenSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E2C1A3531B5E3ABB0002CE47 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E2C1A3541B5E3ABB0002CE47 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -80,7 +84,9 @@
 			children = (
 				E2C1A3541B5E3ABB0002CE47 /* AppDelegate.h */,
 				E2C1A3551B5E3ABB0002CE47 /* AppDelegate.m */,
+				E281C6FA1B7602D30072D688 /* Wait.sh */,
 				E289635F1B5EE17A0038C707 /* KitchenSync.sh */,
+				E23B94E21B75E983007B5067 /* Test.sh */,
 				E2C1A3591B5E3ABB0002CE47 /* Images.xcassets */,
 				E2C1A35B1B5E3ABB0002CE47 /* MainMenu.xib */,
 				E2C1A3521B5E3ABB0002CE47 /* Supporting Files */,
@@ -194,7 +200,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E23B94E31B75E983007B5067 /* Test.sh in Resources */,
 				E2C1A35A1B5E3ABB0002CE47 /* Images.xcassets in Resources */,
+				E281C6FB1B7602D30072D688 /* Wait.sh in Resources */,
 				E28963601B5EE17A0038C707 /* KitchenSync.sh in Resources */,
 				E2C1A35D1B5E3ABB0002CE47 /* MainMenu.xib in Resources */,
 			);

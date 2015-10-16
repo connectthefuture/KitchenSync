@@ -258,7 +258,4 @@ if [ $VERIFY_FILES = 1 ] ; then
 	done
 fi
 
-#trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
 trap "trap - SIGTERM && kill 0" SIGINT SIGTERM EXIT
-#trap "exit" INT TERM
-#trap "kill 0" EXIT

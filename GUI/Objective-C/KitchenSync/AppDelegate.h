@@ -19,12 +19,17 @@
 @property (weak) IBOutlet NSButton *verifyOnly;
 @property (weak) IBOutlet NSButton *autoFolderNaming;
 @property (weak) IBOutlet NSTextField *autoFolderNamingString;
-- (IBAction)doCopyVerify:(id)sender;
+@property (weak) IBOutlet NSButton *goButton;
 @property (weak) IBOutlet NSTextField *commandText;
+@property (weak) IBOutlet NSScrollView *stdoutTextView;
+@property (weak) IBOutlet NSScrollView *stderrTextView;
 - (IBAction)browseSourceFolder:(id)sender;
 - (IBAction)browseTargetFolder1:(id)sender;
 - (IBAction)browseTargetFolder2:(id)sender;
 - (IBAction)browseTargetFolder3:(id)sender;
+- (IBAction)doCopyVerify:(id)sender;
+@property (unsafe_unretained) IBOutlet NSTextView *stdoutText;
+@property (unsafe_unretained) IBOutlet NSTextView *stderrText;
 
 @end
 

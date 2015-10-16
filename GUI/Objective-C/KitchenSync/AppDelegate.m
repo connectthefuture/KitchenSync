@@ -17,6 +17,8 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
     // Insert code here to initialize your application
+    [_autoFolderNaming setHidden:YES];
+    [_autoFolderNamingString setHidden:YES];
 }
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
@@ -25,7 +27,7 @@
 
 - (NSString *)createCommandString
 {
-    NSMutableString *commandString = [NSMutableString stringWithString:@"KitchenSync.sh"];
+    NSMutableString *commandString = [NSMutableString stringWithString:@"Test.sh"];
     
     if(_includeHidden.state == NSOnState)
     {
@@ -42,6 +44,7 @@
         [commandString appendString:@" --checksums-only"];
     }
     
+    /*
     if(_autoFolderNaming.state == NSOnState)
     {
         [commandString appendString:@" --auto-folder-naming"];
@@ -49,6 +52,7 @@
         [commandString appendString:_autoFolderNamingString.stringValue];
         [commandString appendString:@"\""];
     }
+    */
     
     [commandString appendString:@" \""];
     [commandString appendString:_sourceFolder.stringValue];
@@ -77,8 +81,7 @@
 
 - (IBAction)doCopyVerify:(id)sender
 {
-    NSString *scriptPath = [[NSBundle mainBundle] pathForResource: @"KitchenSync.sh" ofType: nil];
-
+    NSString *scriptPath = [[NSBundle mainBundle] pathForResource: @"Wait.sh" ofType: nil];
     NSTask *task = [[NSTask alloc] init];
     task.launchPath = scriptPath;
     NSMutableArray *arguments = [NSMutableArray array];
@@ -98,30 +101,68 @@
         [arguments addObject:@"--checksums-only"];
     }
     
+    /*
     if(_autoFolderNaming.state == NSOnState)
     {
         NSString *arg = [NSString stringWithFormat:@"--auto-folder-naming \"%@\"", _autoFolderNamingString.stringValue];
         [arguments addObject:arg];
     }
+    */
 
-    //NSString *arg = [NSString stringWithFormat:@"\"%@\"", _sourceFolder.stringValue];
-    
-    [arguments addObject:[NSString stringWithFormat:@"\"%@\"", _sourceFolder.stringValue]];
-    [arguments addObject:[NSString stringWithFormat:@"\"%@\"", _targetFolder1.stringValue]];
+    [arguments addObject:[NSString stringWithFormat:@"%@", _sourceFolder.stringValue]];
+    [arguments addObject:[NSString stringWithFormat:@"%@", _targetFolder1.stringValue]];
     
     if(_targetFolder2.stringValue.length > 0)
     {
-        [arguments addObject:[NSString stringWithFormat:@"\"%@\"", _targetFolder2.stringValue]];
+        [arguments addObject:[NSString stringWithFormat:@"%@", _targetFolder2.stringValue]];
     }
     
     if(_targetFolder3.stringValue.length > 0)
     {
-        [arguments addObject:[NSString stringWithFormat:@"\"%@\"", _targetFolder3.stringValue]];
+        [arguments addObject:[NSString stringWithFormat:@"%@", _targetFolder3.stringValue]];
     }
     
-    [task setArguments:arguments];
+    NSLog(@"Arguments: %@", arguments);
+    
+    //[task setArguments:arguments];
     
     _commandText.stringValue = [self createCommandString];
+
+    task.standardOutput = [NSPipe pipe];
+    task.standardError = [NSPipe pipe];
+    
+    [[task.standardOutput fileHandleForReading] setReadabilityHandler:^(NSFileHandle *file)
+    {
+        NSData *data = [file availableData]; // this will read to EOF, so call only once
+        NSString *result = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        NSLog(@"Task output! %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+        
+        _stdoutText.string = [_stdoutText.string stringByAppendingString:result];
+        // if you're collecting the whole output of a task, you may store it on a property
+        //[self.taskOutput appendData:data];
+     }];
+    
+    [[task.standardError fileHandleForReading] setReadabilityHandler:^(NSFileHandle *file)
+    {
+        NSData *data = [file availableData]; // this will read to EOF, so call only once
+        NSString *result = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        NSLog(@"Task output! %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+         
+        _stderrText.string = [_stderrText.string stringByAppendingString:result];
+        // if you're collecting the whole output of a task, you may store it on a property
+        //[self.taskOutput appendData:data];
+    }];
+    
+    [_goButton setEnabled:NO];
+    [task launch];
+    
+    [task setTerminationHandler:^(NSTask *task)
+    {
+        // do your stuff on completion
+        [_goButton setEnabled:YES];
+        [task.standardOutput fileHandleForReading].readabilityHandler = nil;
+        [task.standardError fileHandleForReading].readabilityHandler = nil;
+    }];
 }
 
 - (NSString *)browseForFolder
